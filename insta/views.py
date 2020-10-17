@@ -1,10 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from insta.forms import SignupForm, ChangePasswordForm, EditProfileForm
 from django.contrib.auth.models import User
-
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import update_session_auth_hash
-
 from insta.models import Profile
 from post.models import Post, Follow, Stream
 from django.db import transaction
