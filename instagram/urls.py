@@ -18,12 +18,12 @@ from django.urls import path, include
 from django.conf.urls.static import static
 from django.conf import settings
 
-from instaclone.views import UserProfile, UserProfileFavorites, follow
+from insta.views import UserProfile, UserProfileFavorites, follow
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('post/', include('post.urls')),
-    path('user/', include('instaclone.urls')),
+    path('user/', include('insta.urls')),
     path('direct/', include('direct.urls')),
     path('notifications/', include('notifications.urls')),
     path('<username>/', UserProfile, name='profile'),
