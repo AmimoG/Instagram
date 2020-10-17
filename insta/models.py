@@ -1,54 +1,77 @@
 from django.db import models
-from django.contrib.auth.models import User
-from post.models import Post
 
-from django.db.models.signals import post_save
 
-from PIL import Image
-from django.conf import settings
-import os
+class Category(models.Model):
+    name = models.CharField(max_length=50)
 
-def user_directory_path(instance, filename):
-    # file will be uploaded to MEDIA_ROOT/user_<id>/<filename>
-    profile_pic_name = 'user_{0}/profile.jpg'.format(instance.user.id)
-    full_path = os.path.join(settings.MEDIA_ROOT, profile_pic_name)
+    def __str__(self):
+        return self.name
 
-    if os.path.exists(full_path):
-    	os.remove(full_path)
+    def save_category(self):
+        self.save()
 
-    return profile_pic_name
+    def delete_category(self):
+        self.delete()
 
-# Create your models here.
-class Profile(models.Model):
-	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-	first_name = models.CharField(max_length=50, null=True, blank=True)
-	last_name = models.CharField(max_length=50, null=True, blank=True)
-	location = models.CharField(max_length=50, null=True, blank=True)
-	url = models.CharField(max_length=80, null=True, blank=True)
-	profile_info = models.TextField(max_length=150, null=True, blank=True)
-	created = models.DateField(auto_now_add=True)
-	favorites = models.ManyToManyField(Post)
-	picture = models.ImageField(upload_to=user_directory_path, blank=True, null=True, verbose_name='Picture')
 
-	def save(self, *args, **kwargs):
-		super().save(*args, **kwargs)
-		SIZE = 250, 250
+class Location(models.Model):
+    name = models.CharField(max_length=60)
 
-		if self.picture:
-			pic = Image.open(self.picture.path)
-			pic.thumbnail(SIZE, Image.LANCZOS)
-			pic.save(self.picture.path)
+    @classmethod
+    def get_locations(cls):
+        locations = Location.objects.all()
+        return locations
 
-	def __str__(self):
-		return self.user.username
-		
+    def __str__(self):
+        return self.name
 
-def create_user_profile(sender, instance, created, **kwargs):
-	if created:
-		Profile.objects.create(user=instance)
+    @classmethod
+    def update_location(cls, id, value):
+        cls.objects.filter(id=id).update(image=value)
 
-def save_user_profile(sender, instance, **kwargs):
-	instance.profile.save()
+    def save_location(self):
+        self.save()
 
-post_save.connect(create_user_profile, sender=User)
-post_save.connect(save_user_profile, sender=User)
+    def delete_location(self):
+        self.delete()
+
+
+class Image(models.Model):
+    image = models.ImageField(upload_to='images/')
+    name = models.CharField(max_length=60)
+    description = models.TextField()
+    author = models.CharField(max_length=40, default='admin')
+    date = models.DateTimeField(auto_now_add=True)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    location = models.ManyToManyField(Location)
+
+    @classmethod
+    def filter_by_location(cls, location):
+        image_location = Image.objects.filter(location__name=location).all()
+        return image_location
+
+    @classmethod
+    def update_image(cls, id, value):
+        cls.objects.filter(id=id).update(image=value)
+
+    @classmethod
+    def get_image_by_id(cls, id):
+        image = cls.objects.filter(id=id).all()
+        return image
+
+    @classmethod
+    def search_by_category(cls, category):
+        images = cls.objects.filter(category__name__icontains=category)
+        return images
+
+    def __str__(self):
+        return self.name
+
+    def save_image(self):
+        self.save()
+
+    def delete_image(self):
+        self.delete()
+
+    class Meta:
+        ordering = ['date']
