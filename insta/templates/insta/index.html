@@ -1,63 +1,66 @@
 {% extends 'base.html' %}
 
-{% load static %}
-{% load humanize %}
 
 {% block content %}
-      <div class="columns is-mobile is-centered">
-  <div class="column is-half">
+<div class="container-fluid landing">
+    <h2 class="text-center imagea">Welcome to Nostalgia</h2>
+    <a href="#b" class="scroll"><button class="btn btn-sm btn-info image D-block mx-auto">Browse</button></a>
+</div>
 
-{% for post_item in post_items %}
-  <div class="card">
-  <div class="card-image">
-    <figure class="image is-4by3">
-      <a href="{{ post_item.get_absolute_url }}"><img src="{{ post_item.picture.url }}" alt="Placeholder image"></a>
-    </figure>
-  </div>
-  <div class="card-content">
-    <div class="media">
-      <div class="media-left">
-        <figure class="image is-48x48">
-          {% if post_item.user.profile.picture %}
-            <img src="{{ post_item.user.profile.picture.url }}" alt="Placeholder image">
-          {% else %}
-            <img src="https://bulma.io/images/placeholders/96x96.png" alt="Placeholder image">
-          {% endif %}
-        </figure>
-      </div>
-      <div class="media-content">
-        {% if post_item.user.profile.first_name %}
-          <a href="{% url 'profile' post_item.user %}"><p class="title is-4">{{ post_item.user.profile.first_name }} {{ post_item.user.profile.last_name }}</p></a>
-        {% else %}
-          <a href="{% url 'profile' post_item.user %}"><p class="title is-4">Unknown</p></a>
-        {% endif %}
+<div class="container-fluid boded" id="b">
+    <div class="container">
 
-        <p class="subtitle is-6">@{{ post_item.user.username }}</p>
 
-      {{ post_item.caption }}
-      <p>{% for tag in post_item.tags.all %}<a href="{{ tag.get_absolute_url }}">#{{ tag }}</a>{% endfor %}</p>
-      <br>
-      <strong><small>{{ post_item.posted | naturaltime }}</small></strong>
-      </div>
-    
+        <div class="row">
+            <div class="col-md-7">
+                <h3>Gallery</h3>
+            </div>
+            <div class="col-md-5">
+            <span id="locations">
+                {% for location in locations %}
+                    <a class="btn btn-outline-info btn-sm" id="btn"
+                       href="/location/{{location.name}}">{{location.name}}</a>
+                {%endfor%}
+             </span>
+            </div>
+        </div>
+        <hr>
+        <div class="card-columns">
+            {% for image in images %}
+            <div class="card" data-toggle="modal" data-target="#{{image.id}}">
+                <img src="{{image.image.url}}" alt="{{image.name}}" class="card-img">
+            </div>
 
-    <div class="media-right">
-      <a href="{% url 'postlike' post_item.id %}"><i class="material-icons has-text-danger">favorite</i></a>
-      <p>{{ post_item.likes }} Likes</p>  
+
+            <div class="modal fade " id="{{image.id}}" tabindex="-1" role="dialog"
+                 aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-md" role="document">
+                    <div class="modal-content modalcard">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="imageheader">{{image.name}}</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <img src="{{image.image.url}}" alt="{{image.name}}" class="img-fluid">
+                            <p class="imgdesc text-center">{{image.description}}</p>
+                            <span class="btn btn-sm btn-outline-success">{{image.category}}</span> <a
+                                href="/location/{{image.location}}" class="btn btn-sm btn-outline-info">{{image.location}}</a>
+                        </div>
+                        <div class="modal-footer">
+                            <input class="form-control input-lg" type="text"
+                                   value="{{image.image.url}}" id="{{image.id}}.url">
+                            <button class="btn btn-success btn-sm" onclick="copyLink('{{image.id}}.url')">Copy</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-dismiss="modal">Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
-
-</div>
-
-
-
-  </div>
-</div>
-
-<br>
-
-{% endfor %}
-
-</div>
 </div>
 
 {% endblock %}
