@@ -1,5 +1,12 @@
+from django.conf import settings
 from django.shortcuts import render, redirect
-from .models import Image, Comments, Profile
+from django.http import HttpResponse
+from django.conf.urls import url,include
+from django.contrib.auth import authenticate, login, logout
+from django.conf.urls.static import static
+from .models import Profile, Image
+from django.contrib.auth.models import User
+from . import models
 from django.contrib.auth.decorators import login_required
 
 
@@ -33,3 +40,25 @@ def search_results(request):
 @login_required(login_url='/accounts/login/')
 def profile(request):
     return render(request, 'display/userprofile.html')
+
+def logout(request):
+    return render(request, 'registration/logout.html')
+
+def login(request):
+    return render(request, 'registration/login.html')
+
+@login_required(login_url='/accounts/login/')
+def upload(request):
+    current_user = request.user
+    p = Profile.objects.filter(id=current_user.id).first()
+    imageuploader_profile = Image.objects.filter(imageuploader_profile=p).all()
+    if request.method == 'POST':
+        form = PostForm(request.POST,request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.imageuploader_profile= p
+            post.save()
+            return redirect('/')
+    else:
+        form =PostForm
+    return render(request, 'display/upload.html', {"form": form})
