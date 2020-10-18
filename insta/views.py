@@ -1,12 +1,15 @@
-from django.shortcuts import render
-from .models import Image, Location
+from django.shortcuts import render, redirect
+from .models import Image, Comments, Profile
+from django.contrib.auth.decorators import login_required
 
 
+@login_required(login_url='/accounts/login/')
 def index(request):
-    images = Image.objects.all()
-    locations = Location.get_locations()
-    print(locations)
-    return render(request, 'insta/index.html', {'images': images[::-1], 'locations': locations})
+    all_images = Image.objects.all()
+    all_users = Profile.objects.all()
+    next = request.GET.get('next')
+    if next: return redirect(next)
+    return render(request, 'display/home.html',  {"all_images": all_images}, {"all_users":all_users})
 
 
 def image_location(request, location):
@@ -25,3 +28,8 @@ def search_results(request):
     else:
         message = "You haven't searched for any image category"
         return render(request, 'insta/search_results.html', {"message": message})
+
+
+@login_required(login_url='/accounts/login/')
+def profile(request):
+    return render(request, 'display/userprofile.html')

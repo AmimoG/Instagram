@@ -1,39 +1,5 @@
 from django.db import models
-
-
-class Category(models.Model):
-    name = models.CharField(max_length=50)
-
-    def __str__(self):
-        return self.name
-
-    def save_category(self):
-        self.save()
-
-    def delete_category(self):
-        self.delete()
-
-
-class Location(models.Model):
-    name = models.CharField(max_length=60)
-
-    @classmethod
-    def get_locations(cls):
-        locations = Location.objects.all()
-        return locations
-
-    def __str__(self):
-        return self.name
-
-    @classmethod
-    def update_location(cls, id, value):
-        cls.objects.filter(id=id).update(image=value)
-
-    def save_location(self):
-        self.save()
-
-    def delete_location(self):
-        self.delete()
+from django.contrib.auth.models import User
 
 
 class Image(models.Model):
@@ -42,8 +8,7 @@ class Image(models.Model):
     description = models.TextField()
     author = models.CharField(max_length=40, default='admin')
     date = models.DateTimeField(auto_now_add=True)
-    category = models.ForeignKey('Category', on_delete=models.CASCADE)
-    location = models.ManyToManyField(Location)
+    
 
     @classmethod
     def filter_by_location(cls, location):
@@ -75,3 +40,26 @@ class Image(models.Model):
 
     class Meta:
         ordering = ['date']
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, related_name='profile')
+    first_name = models.CharField(max_length=30)
+    last_name = models.CharField(max_length=30)
+    bio = models.CharField(max_length=350) 
+    profile_pic = models.ImageField(upload_to='ProfilePicture/')
+    profile_avatar = models.ImageField(upload_to='AvatorPicture/')
+    date = models.DateTimeField(auto_now_add=True, null= True)  
+
+    '''Method to filter database results'''
+    def __str__(self):
+        return self.profile.user
+
+class Comments (models.Model):
+    comment_post = models.CharField(max_length=150)
+    author = models.ForeignKey('Profile',related_name='commenter' , on_delete=models.CASCADE)
+    commented_image = models.ForeignKey('Image', on_delete=models.CASCADE)
+    date = models.DateTimeField(auto_now_add=True)
+
+    '''Method to filter database results'''
+    def __str__(self):
+        return self.author
