@@ -1,14 +1,17 @@
-from django.conf.urls import url
+from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.shortcuts import render, redirect
 
 app_name = 'insta'
 
 urlpatterns = [
-    url(r'^$', views.index, name='index'),
-    url(r'^search/', views.search_results, name='search'),
-    url(r'^location/(?P<location>\w+)/', views.image_location, name='location'),
+    path('',views.index, name='index'),
+    path('profile',views.profile,name ='profile'),
+    path('login',views.login,name ='login'),
+    path('logout',views.index,{'next_page': 'accounts:login'}, name='logout'),
+    path('upload',views.upload,name ='upload'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

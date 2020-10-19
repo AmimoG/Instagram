@@ -4,13 +4,15 @@ import datetime
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+
+
 class Image(models.Model):
     image = models.ImageField(upload_to='images/')
     name = models.CharField(max_length=60)
     description = models.TextField()
     author = models.CharField(max_length=40, default='admin')
     date = models.DateTimeField(auto_now_add=True)
-    
+        
 
     @classmethod
     def filter_by_location(cls, location):
@@ -44,13 +46,14 @@ class Image(models.Model):
         ordering = ['date']
 
 class Profile(models.Model):
-    user = models.OneToOneField(User, related_name='profile')
+    user = models.OneToOneField(User,on_delete=models.CASCADE,)
     first_name = models.CharField(max_length=30)
     last_name = models.CharField(max_length=30)
     bio = models.CharField(max_length=350) 
     profile_pic = models.ImageField(upload_to='ProfilePicture/')
     profile_avatar = models.ImageField(upload_to='AvatorPicture/')
     date = models.DateTimeField(auto_now_add=True, null= True)  
+
 
     '''Method to filter database results'''
     def __str__(self):
