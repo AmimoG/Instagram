@@ -11,10 +11,10 @@ class SignUpForm(UserCreationForm):
         model = User
         fields = ('username', 'email', 'password1', 'password2', )
 
-class PostForm(forms.ModelForm):
+class AddPostForm(forms.ModelForm):
   class Meta:
     model = Image
-    fields = ('image_caption', 'image', 'tag_someone',)
+    exclude = ['name', 'author', 'date',]
 
 class SignUpForm(forms.ModelForm):
   class Meta:

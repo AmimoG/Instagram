@@ -10,15 +10,17 @@ from django.contrib.auth.models import User
 from . import models
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from .forms import AddPostForm
 
 
 @login_required(login_url='/accounts/login/')
 def index(request):
     all_images = Image.objects.all()
     all_users = Profile.objects.all()
+    current_user = request.user
     next = request.GET.get('next')
     if next: return redirect(next)
-    return render(request, 'display/home.html',  {"all_images": all_images, "all_users":all_users})
+    return render(request, 'display/home.html',  {"all_images": all_images, "current_user":current_user, "all_users":all_users})
 
 
 def image_location(request, location):
@@ -43,11 +45,9 @@ def search_results(request):
 def profile(request):
     return render(request, 'display/userprofile.html')
 
-def logout(request):
-    return render(request, 'registration/logout.html')
 
-def login(request):
-    return render(request, 'display/home.html')
+def post(request):
+    return render(request, 'display/post.html')
 
 
 @login_required(login_url='/accounts/login/')
@@ -61,7 +61,7 @@ def upload(request):
             post = form.save(commit=False)
             post.imageuploader_profile= p
             post.save()
-            return redirect('/')
+            return redirect('index')
     else:
         form =PostForm
     return render(request, 'display/home.html', {"form": form})
@@ -74,43 +74,23 @@ def signup(request):
         password = form.cleaned_data.get('password1')
         user = authenticate(username=username, password=password)
         login(request, user)
+        return redirect('index')
+    return render(request, 'registration/signup.html', {'form': form})
+
+
+# adding post and or images
+
+@login_required(login_url='/accounts/login/')
+def post(request):
+    current_user = request.user
+
+    if request.method == 'POST':
+        form = AddPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.user= current_user
+            post.save()
         return redirect('/')
-    return render(request, 'registration/login.html', {'form': form})
-
-def UserProfile(request, username):
-	user = get_object_or_404(User, username=username)
-	profile = Profile.objects.get(user=user)
-	url_name = resolve(request.path).url_name
-	
-	if url_name == 'profile':
-		posts = Post.objects.filter(user=user).order_by('-posted')
-
-	else:
-		posts = profile.favorites.all()
-
-	#Profile info box
-	posts_count = Post.objects.filter(user=user).count()
-	following_count = Follow.objects.filter(follower=user).count()
-	followers_count = Follow.objects.filter(following=user).count()
-
-	#follow status
-	follow_status = Follow.objects.filter(following=user, follower=request.user).exists()
-
-	#Pagination
-	paginator = Paginator(posts, 8)
-	page_number = request.GET.get('page')
-	posts_paginator = paginator.get_page(page_number)
-
-	template = loader.get_template('profile.html')
-
-	context = {
-		'posts': posts_paginator,
-		'profile':profile,
-		'following_count':following_count,
-		'followers_count':followers_count,
-		'posts_count':posts_count,
-		'follow_status':follow_status,
-		'url_name':url_name,
-	}
-
-	return HttpResponse(template.render(context, request))
+    else:
+        form = AddPostForm()
+    return render(request, 'new_post.html', {'current_user':current_user, 'form':form}) 
