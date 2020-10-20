@@ -3,11 +3,13 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.conf.urls import url,include
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import login, authenticate
 from django.conf.urls.static import static
 from .models import Profile, Image
 from django.contrib.auth.models import User
 from . import models
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 
 
 @login_required(login_url='/accounts/login/')
@@ -16,7 +18,7 @@ def index(request):
     all_users = Profile.objects.all()
     next = request.GET.get('next')
     if next: return redirect(next)
-    return render(request, 'display/home.html',  {"all_images": all_images}, {"all_users":all_users})
+    return render(request, 'display/home.html',  {"all_images": all_images, "all_users":all_users})
 
 
 def image_location(request, location):
@@ -31,10 +33,10 @@ def search_results(request):
         searched_images = Image.search_by_category(category)
         message = f"{category}"
         print(searched_images)
-        return render(request, 'insta/search_results.html', {"message": message, "images": searched_images})
+        return render(request, 'display/eplore.html', {"message": message, "images": searched_images})
     else:
         message = "You haven't searched for any image category"
-        return render(request, 'insta/search_results.html', {"message": message})
+        return render(request, 'display/explore.html', {"message": message})
 
 
 @login_required(login_url='/accounts/login/')
@@ -45,7 +47,8 @@ def logout(request):
     return render(request, 'registration/logout.html')
 
 def login(request):
-    return render(request, 'registration/login.html')
+    return render(request, 'display/home.html')
+
 
 @login_required(login_url='/accounts/login/')
 def upload(request):
@@ -61,4 +64,53 @@ def upload(request):
             return redirect('/')
     else:
         form =PostForm
-    return render(request, 'display/upload.html', {"form": form})
+    return render(request, 'display/home.html', {"form": form})
+
+def signup(request):
+    form = UserCreationForm(request.POST)
+    if form.is_valid():
+        form.save()
+        username = form.cleaned_data.get('username')
+        password = form.cleaned_data.get('password1')
+        user = authenticate(username=username, password=password)
+        login(request, user)
+        return redirect('/')
+    return render(request, 'registration/login.html', {'form': form})
+
+def UserProfile(request, username):
+	user = get_object_or_404(User, username=username)
+	profile = Profile.objects.get(user=user)
+	url_name = resolve(request.path).url_name
+	
+	if url_name == 'profile':
+		posts = Post.objects.filter(user=user).order_by('-posted')
+
+	else:
+		posts = profile.favorites.all()
+
+	#Profile info box
+	posts_count = Post.objects.filter(user=user).count()
+	following_count = Follow.objects.filter(follower=user).count()
+	followers_count = Follow.objects.filter(following=user).count()
+
+	#follow status
+	follow_status = Follow.objects.filter(following=user, follower=request.user).exists()
+
+	#Pagination
+	paginator = Paginator(posts, 8)
+	page_number = request.GET.get('page')
+	posts_paginator = paginator.get_page(page_number)
+
+	template = loader.get_template('profile.html')
+
+	context = {
+		'posts': posts_paginator,
+		'profile':profile,
+		'following_count':following_count,
+		'followers_count':followers_count,
+		'posts_count':posts_count,
+		'follow_status':follow_status,
+		'url_name':url_name,
+	}
+
+	return HttpResponse(template.render(context, request))

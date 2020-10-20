@@ -46,18 +46,26 @@ class Image(models.Model):
         ordering = ['date']
 
 class Profile(models.Model):
-    user = models.OneToOneField(User,on_delete=models.CASCADE,)
-    first_name = models.CharField(max_length=30)
-    last_name = models.CharField(max_length=30)
-    bio = models.CharField(max_length=350) 
-    profile_pic = models.ImageField(upload_to='ProfilePicture/')
-    profile_avatar = models.ImageField(upload_to='AvatorPicture/')
-    date = models.DateTimeField(auto_now_add=True, null= True)  
+	user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+	first_name = models.CharField(max_length=50, null=True, blank=True)
+	last_name = models.CharField(max_length=50, null=True, blank=True)
+	location = models.CharField(max_length=50, null=True, blank=True)
+	url = models.CharField(max_length=80, null=True, blank=True)
+	profile_info = models.TextField(max_length=150, null=True, blank=True)
+	created = models.DateField(auto_now_add=True)
+	picture = models.ImageField(blank=True, null=True, verbose_name='Picture')
 
+	def save(self, *args, **kwargs):
+		super().save(*args, **kwargs)
+		SIZE = 250, 250
 
-    '''Method to filter database results'''
-    def __str__(self):
-        return self.profile.user
+		# if self.picture:
+		# 	pic = Image.open(self.picture.path)
+		# 	pic.thumbnail(SIZE, Image.LANCZOS)
+		# 	pic.save(self.picture.path)
+
+	def __str__(self):
+		return self.user.username
 
 class Comments (models.Model):
     comment_post = models.CharField(max_length=150)
@@ -68,3 +76,22 @@ class Comments (models.Model):
     '''Method to filter database results'''
     def __str__(self):
         return self.author
+
+class Follow(models.Model):
+	follower = models.ForeignKey(User,on_delete=models.CASCADE, null=True, related_name='follower')
+	following = models.ForeignKey(User,on_delete=models.CASCADE, null=True, related_name='following')
+
+	def user_follow(sender, instance, *args, **kwargs):
+		follow = instance
+		sender = follow.follower
+		following = follow.following
+		notify = Notification(sender=sender, user=following, notification_type=3)
+		notify.save()
+
+	def user_unfollow(sender, instance, *args, **kwargs):
+		follow = instance
+		sender = follow.follower
+		following = follow.following
+
+		notify = Notification.objects.filter(sender=sender, user=following, notification_type=3)
+		notify.delete()

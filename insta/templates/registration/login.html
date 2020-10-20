@@ -1,4 +1,9 @@
-{%extends "registration/base.html"%} {% load bootstrap3 %} {% block content %}
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+
 <div class="container">
     <div class="logincont">
         <!-- Image beside Login-Form -->
@@ -6,29 +11,36 @@
         <div class="loginimage">
             <img src="../../static/images/instagrampicture2.png " alt="instagram login phone ">
         </div>
-        
-        <!-- Output to Display error in login -->
         <div class="loginform">
             {% if form.errors %}
             <p > Password or Username is incorrect </p>
             {% endif %}
-            <!--Collapse Output to Display error in login -->
-        
-
-            <!-- BootStrap class to add border to login form -->
-            <div  class="panel panel-default">
-
-                <!-- Instagram image at the top of Login form -->
-                
+            <div  class="panel panel-default">                
                     <img src="../../static/images/instalogowhite.png" alt="signuplogo " style="width:250px; height:80px;margin: 5px auto; display: block;">
-                
-                <!--Collaplse Instagram image at the top of Login form -->
 
-                <div class="panel-body">
+                    <div class="panel-body">
 
                     <form action="/accounts/login/" method="post">
-                        {% csrf_token %} {% bootstrap_form form%}
-
+                        {% csrf_token %}
+                        <table class="table">
+                            <tr>
+                                <td><label for="id_username">Username</label></td>
+                                <td><input id="id_username" name="username" 
+                                           type="text" class="form-control"></td>
+                            </tr>
+                            <tr>
+                                <td><label for="id_password">Password</label></td>
+                                <td><input id="id_password" name="password" 
+                                           type="password" class="form-control"></td>
+                            </tr>
+                        </table>
+                        {% if form.errors %}
+                            <p class=" label label-danger color-red">
+                                Your username and password didn't match. 
+                                Please try again.
+                            </p>
+                        {% endif %}
+        
                         <div class="form-group">
                             <input type="submit" class="btn btn-primary btn-lg btn-block" value="Login">
                         </div>
@@ -42,7 +54,7 @@
                         <!-- Signup Button Next to (Do you have an account)! -->
                         <div class="panel-heading">
                             <p class="_g9ean pull-left">Don't have an account?</p>
-                            <a href="/accounts/register/" class="btn btn-primary btn-sm pull-right">Sign Up</a>
+                            <a href="signup" class="btn btn-primary btn-sm pull-right">Sign Up</a>
                         </div>
                         <!--Collapse Signup Button! -->
                         <input type="hidden" name="next" value="{{next}}">
@@ -56,6 +68,7 @@
 
             </div>
             <!-- Play Store and Apple store Images With well text to put them sidebyside! -->
+            <br>
             <div class="login-playstorebtn">
             
             

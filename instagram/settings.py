@@ -72,8 +72,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_instagram',
-    # 'instagram_profile',
-    'insta',
+    'profile',
+    'insta.apps.InstaConfig',
     'bootstrap3',
 ]
 
