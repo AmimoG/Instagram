@@ -75,7 +75,7 @@ def signup(request):
         user = authenticate(username=username, password=password)
         login(request, user)
         return redirect('index')
-    return render(request, 'registration/signup.html', {'form': form})
+    return render(request, 'registration/registration_form.html', {'form': form})
 
 
 # adding post and or images
